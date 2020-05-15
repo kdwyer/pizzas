@@ -1,3 +1,5 @@
+import typing
+
 import bottle
 import wtforms
 
@@ -8,7 +10,7 @@ app = bottle.Bottle()
 # FIXME deprecation warning about absolute template paths.
 @app.route("/", name="index")
 @bottle.jinja2_view("index", template_lookup=["pizza/templates"])
-def index():
+def index() -> typing.Dict[str, typing.Any]:
     pizzas = [("margherita", 799), ("bianca", 899)]
 
     class Form(wtforms.Form):
