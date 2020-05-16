@@ -19,4 +19,4 @@ def index() -> typing.Dict[str, typing.Any]:
     for pizza, _ in pizzas:
         setattr(Form, pizza, wtforms.BooleanField())
     form = Form()
-    return {"app": app, "title": "Pizza Shop", "form": form, "pizzas": pizzas}
+    return {"app": app, "title": "Pizza Shop", "form": form, "pizzas": dict(pizzas)}
