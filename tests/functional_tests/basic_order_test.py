@@ -17,14 +17,17 @@ def test_can_place_order():
     assert "7.99" in [price.string for price in prices]
     # 2.1 select pizza
     form = index.forms[0]
+    assert form["margherita"].checked is False
     form["margherita"] = True
+    assert form["margherita"].checked is True
     # 3. submitted
-    resp = form.submit()
+    redir = form.submit("submit")
     # 4. redirect to order conf
-    assert resp.status == 302
+    assert redir.status_int == 302
+    resp = redir.follow()
     # 5. order & price displayed
     rhtml = resp.html
-    items = rhtml.findall("span.line-item")
+    items = rhtml.find_all("span", class_="line-item-name")
     assert len(items) == 1
     assert items[0].string == "margherita"
     prices = rhtml.find_all("span", class_="line-item-price")
