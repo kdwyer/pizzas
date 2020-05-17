@@ -1,9 +1,9 @@
 import pytest
 import webtest
 
-import pizza
+from pizza import orders
 
 
 @pytest.fixture(scope="module")
 def app():
-    return webtest.TestApp(pizza.application)
+    return webtest.TestApp(orders.application)

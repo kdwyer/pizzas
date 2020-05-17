@@ -1,6 +1,6 @@
 import pytest
 
-from pizza import models
+from pizza.orders import models
 
 
 @pytest.fixture(autouse=True)

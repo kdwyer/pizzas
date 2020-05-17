@@ -1,5 +1,5 @@
 from sqlalchemy import orm
-from pizza import models
+from pizza.orders import models
 
 
 class TestInit:

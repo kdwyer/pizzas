@@ -12,7 +12,7 @@ app = bottle.Bottle()
 
 # FIXME deprecation warning about absolute template paths.
 @app.route("/", name="index", method=["GET", "POST"])
-@bottle.jinja2_view("index", template_lookup=["pizza/templates"])
+@bottle.jinja2_view("index", template_lookup=["pizza/orders/templates"])
 def index() -> typing.Dict[str, typing.Any]:
     class Form(wtforms.Form):
         submit = wtforms.SubmitField()
@@ -41,7 +41,7 @@ def index() -> typing.Dict[str, typing.Any]:
 
 
 @app.route("/display-order/")
-@bottle.jinja2_view("display-order", template_lookup=["pizza/templates"])
+@bottle.jinja2_view("display-order", template_lookup=["pizza/orders/templates"])
 def display_order() -> typing.Dict[str, typing.Any]:
     # mypy doesn't like that models.Session is None initially.
     session = models.Session()  # type: ignore[misc]
