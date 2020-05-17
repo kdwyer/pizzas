@@ -1,12 +1,4 @@
-import webtest
-
-import pizza
-
-
-app = webtest.TestApp(pizza.application)
-
-
-def test_contains_expected_html():
+def test_contains_expected_html(app):
     resp = app.get("/display-order/")
     html = resp.html
     assert html.title.string == "Pizza Shop"
@@ -16,7 +8,7 @@ def test_contains_expected_html():
     assert total.find("span").string == "0.00"
 
 
-def test_contains_order_details():
+def test_contains_order_details(app):
     resp = app.get("/display-order/?name=margherita&name=bianca")
     html = resp.html
     item_names = html.find_all("span", class_="line-item-name")

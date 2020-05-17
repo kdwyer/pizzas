@@ -1,12 +1,4 @@
-import webtest
-
-import pizza
-
-
-app = webtest.TestApp(pizza.application)
-
-
-def test_can_place_order():
+def test_can_place_order(app):
     # 1. goto page
     index = app.get("/")
     # 2. pizzas and prices displayed
