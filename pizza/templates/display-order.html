@@ -6,8 +6,8 @@
     <body>
         <p id="confirmation-title">your order</p>
         <ul>
-            {% for name, price in order_items %}
-            <li><span class="line-item-name">{{ name}}</span><span class="line-item-price">{{ '{:.2f}'.format(price / 100) }}</span>
+            {% for item in order_items %}
+                <li><span class="line-item-name">{{ item.name}}</span><span class="line-item-price">{{ '{:.2f}'.format(item.price / 100) }}</span>
             {% endfor %}
         </ul>
         <p id="total">Total:&nbsp;<span>{{ '{:.2f}'.format(total / 100) }}</span></p>

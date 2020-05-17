@@ -1,14 +1,40 @@
-def test_can_place_order(app):
+import pytest
+
+from pizza import models
+
+
+@pytest.fixture(autouse=True)
+def set_engine():
+    models.init("sqlite:///")
+    models.Base.metadata.create_all(bind=models.engine)
+    models.Session.configure(bind=models.engine)
+    yield
+    models.engine.dispose()
+
+
+@pytest.fixture
+def add_pizzas():
+    session = models.Session()
+    for name, price in [("funghi", 849), ("margherita", 799)]:
+        pizza = models.Pizza(name=name, price=price)
+        session.add(pizza)
+    session.commit()
+    models.Session.remove()
+
+
+def test_can_place_order(app, add_pizzas):
+    # 0. Setup
+    add_pizzas
     # 1. goto page
     index = app.get("/")
     # 2. pizzas and prices displayed
     ihtml = index.html
     labels = ihtml("label")
     assert len(labels) == 2
-    assert "Margherita" in [label.string for label in labels]
+    assert ["Funghi", "Margherita"] == [label.string for label in labels]
     prices = ihtml.find_all("span", class_="item-price")
     assert len(prices) == 2
-    assert "7.99" in [price.string for price in prices]
+    assert ["8.49", "7.99"] == [price.string for price in prices]
     # 2.1 select pizza
     form = index.forms[0]
     assert form["margherita"].checked is False
