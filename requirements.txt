@@ -1,3 +1,5 @@
 bottle
 jinja2
 wtforms
+psycopg2
+alembic
