@@ -4,8 +4,10 @@ def test_can_place_order(app):
     # 2. pizzas and prices displayed
     ihtml = index.html
     labels = ihtml("label")
+    assert len(labels) == 2
     assert "Margherita" in [label.string for label in labels]
     prices = ihtml.find_all("span", class_="item-price")
+    assert len(prices) == 2
     assert "7.99" in [price.string for price in prices]
     # 2.1 select pizza
     form = index.forms[0]
