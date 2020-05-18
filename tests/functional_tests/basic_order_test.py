@@ -52,3 +52,7 @@ def test_can_place_order(app, add_pizzas):
     assert items[0].string == "margherita"
     prices = rhtml.find_all("span", class_="line-item-price")
     assert prices[0].string == "7.99"
+    # 6. Order reference displayed.
+    reference = rhtml.find("span", id="order-reference").string
+    assert reference.islapha()
+    assert len(reference) == 6

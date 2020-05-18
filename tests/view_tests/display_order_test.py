@@ -33,7 +33,7 @@ def test_contains_expected_html(app):
 
 
 def test_contains_order_details(app, add_pizzas):
-    resp = app.get("/display-order/?name=margherita&name=funghi")
+    resp = app.get("/display-order/OhbVrp/")
     html = resp.html
     item_names = html.find_all("span", class_="line-item-name")
     assert item_names[0].string == "funghi"
