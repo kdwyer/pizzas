@@ -1,0 +1,17 @@
+Determine order invariants
+Display order ref w/order => store order
+send order to fulfillment service
+create fulfillment service :-)
+update when order fulfilled
+choose base for pizza
+choose sauce for pizza
+choose toppings for pizza
+choose more than one of each pizza type
+email customer with order details
+allocate stock on order
+reorder stock
+replenish stock
+geographic order range
+geographic delivery charge
+membership
+reporting
