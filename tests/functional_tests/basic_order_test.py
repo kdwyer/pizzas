@@ -1,3 +1,5 @@
+import random
+
 import pytest
 
 from pizza.orders import models
@@ -25,6 +27,7 @@ def add_pizzas():
 def test_can_place_order(app, add_pizzas):
     # 0. Setup
     add_pizzas
+    random.seed(42)
     # 1. goto page
     index = app.get("/")
     # 2. pizzas and prices displayed
@@ -54,5 +57,5 @@ def test_can_place_order(app, add_pizzas):
     assert prices[0].string == "7.99"
     # 6. Order reference displayed.
     reference = rhtml.find("span", id="order-reference").string
-    assert reference.islapha()
+    assert reference.isalpha()
     assert len(reference) == 6

@@ -1,5 +1,4 @@
 import typing
-from urllib import parse
 
 import bottle
 import wtforms
@@ -30,8 +29,18 @@ def index() -> typing.Dict[str, typing.Any]:
         drop = [k for k, v in selected.items() if not v]
         for k in drop:
             del selected[k]
-        q = parse.urlencode([("name", name) for name in selected.keys()])
-        bottle.redirect(f"/display-order/?{q}")
+        selected_pizzas = session.query(models.Pizza).filter(
+            models.Pizza.name.in_(selected.keys())
+        )
+        order = models.Order()
+        items = [models.Item(pizza=pizza) for pizza in selected_pizzas]
+        order.items = items
+        session.add(order)
+        # Flush the session to ensure that order reference is unique.
+        # FIXME we should handle recovering from a duplicate!
+        session.flush()
+        session.commit()
+        bottle.redirect(f"/display-order/{order.reference}/")
     return {
         "app": app,
         "title": "Pizza Shop",
@@ -40,18 +49,23 @@ def index() -> typing.Dict[str, typing.Any]:
     }
 
 
-@app.route("/display-order/")
+@app.route("/display-order/<order_reference:re:[A-Za-z]{6}>/")
 @bottle.jinja2_view("display-order", template_lookup=["pizza/orders/templates"])
-def display_order() -> typing.Dict[str, typing.Any]:
+def display_order(*, order_reference) -> typing.Dict[str, typing.Any]:
     # mypy doesn't like that models.Session is None initially.
     session = models.Session()  # type: ignore[misc]
-    names = bottle.request.query.getall("name")
-    pizzas = (
-        session.query(models.Pizza)
-        .filter(models.Pizza.name.in_(names))
-        .order_by(models.Pizza.name)
-        .all()
+    order = (
+        session.query(models.Order)
+        .filter(models.Order.reference == order_reference)
+        .one()
     )
+    total = sum(i.pizza.price for i in order.items)
+    order_items = sorted(order.items, key=lambda i: i.pizza.name)
+    print("*** Order items", [i.pizza.name for i in order_items], " ***")
     session.close()
-    total = sum(p.price for p in pizzas)
-    return {"title": "Pizza Shop", "total": total, "order_items": pizzas}
+    return {
+        "title": "Pizza Shop",
+        "total": total,
+        "order_items": order_items,
+        "reference": order_reference,
+    }

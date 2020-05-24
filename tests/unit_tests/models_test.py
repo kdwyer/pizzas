@@ -1,3 +1,5 @@
+import re
+
 from sqlalchemy import orm
 from pizza.orders import models
 
@@ -29,3 +31,14 @@ class TestInit:
         monkeypatch.setattr(models, "Session", None)
         models.init("sqlite:///")
         assert models.Session.bind == models.engine
+
+
+class TestOrder:
+    def test_sets_reference_when_initialised(self, monkeypatch):
+        # FIXME not sure why we need to monkeypatch here
+        # maybe another fixture is run before this test?
+        monkeypatch.setattr(models, "engine", None)
+        monkeypatch.setattr(models, "Session", None)
+        models.init("sqlite:///")
+        order = models.Order()
+        assert re.fullmatch(r"[A-Za-z]{6}", order.reference)

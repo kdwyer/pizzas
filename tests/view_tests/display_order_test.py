@@ -1,6 +1,12 @@
+import random
+
+import bottle
 import pytest
 
 from pizza.orders import models
+
+
+bottle.DEBUG = True
 
 
 @pytest.fixture(autouse=True)
@@ -15,21 +21,29 @@ def set_engine():
 @pytest.fixture
 def add_pizzas():
     session = models.Session()
-    for name, price in [("funghi", 849), ("margherita", 799)]:
-        pizza = models.Pizza(name=name, price=price)
-        session.add(pizza)
+    pizza_data = [("funghi", 849), ("margherita", 799)]
+    pizzas = [models.Pizza(name=name, price=price) for (name, price) in pizza_data]
+    session.add_all(pizzas)
+    random.seed(42)
+    order = models.Order()
+    order.items = [models.Item(pizza=p) for p in pizzas]
+    session.add(order)
     session.commit()
     models.Session.remove()
 
 
-def test_contains_expected_html(app):
-    resp = app.get("/display-order/")
+def test_contains_expected_html(app, add_pizzas):
+    resp = app.get("/display-order/OhbVrp/")
     html = resp.html
     assert html.title.string == "Pizza Shop"
     assert html.find("p", id="confirmation-title").string == "your order"
+    # FIXME duplicated in func test.
+    reference = html.find("span", id="order-reference").string
+    assert reference.isalpha()
+    assert len(reference) == 6
     assert html("ul")
     total = html.find("p", id="total")
-    assert total.find("span").string == "0.00"
+    assert total.find("span").string == "16.48"
 
 
 def test_contains_order_details(app, add_pizzas):
