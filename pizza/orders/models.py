@@ -1,12 +1,14 @@
 """Models and database initialisation for the pizza package."""
 
+import functools
 import random
 import string
+import sys
 
+import bottle
 import sqlalchemy as sa
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import orm
-
+from sqlalchemy.ext.declarative import declarative_base
 
 # TODO do we need to expose engine?
 engine = None  # type: ignore
@@ -30,8 +32,7 @@ def init(url):
     global engine
     global Session
     engine = sa.create_engine(url)
-    # FIXME manage sessions outside request handlers.
-    Session = orm.scoped_session(orm.sessionmaker(bind=engine, expire_on_commit=False))
+    Session = orm.scoped_session(orm.sessionmaker(bind=engine))
     return
 
 
@@ -81,3 +82,28 @@ class Item(Base):  # type: ignore
     pizzas_id = sa.Column(sa.Integer, sa.ForeignKey("pizzas.pizzas_id"))
 
     pizza = orm.relationship("Pizza", backref=orm.backref("pizzas", uselist=False))
+
+
+def manage_session(func):
+    """Decorator that manages a scoped session's lifecycle."""
+
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        session = Session()
+        try:
+            rval = func(*args, **kwargs)
+            session.commit()
+            return rval
+        except:  # noqa: E722
+            # Bottle handles redirects by raising the response as an
+            # exception, so in this case we need to commit
+            # rather than roll back.
+            if isinstance(sys.exc_info()[1], bottle.HTTPResponse):
+                session.commit()
+                raise
+            session.rollback()
+            raise
+        finally:
+            Session.remove()
+
+    return wrapper
