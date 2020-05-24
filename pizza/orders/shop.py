@@ -51,7 +51,7 @@ def index() -> typing.Dict[str, typing.Any]:
 
 @app.route("/display-order/<order_reference:re:[A-Za-z]{6}>/")
 @bottle.jinja2_view("display-order", template_lookup=["pizza/orders/templates"])
-def display_order(*, order_reference) -> typing.Dict[str, typing.Any]:
+def display_order(*, order_reference: str) -> typing.Dict[str, typing.Any]:
     # mypy doesn't like that models.Session is None initially.
     session = models.Session()  # type: ignore[misc]
     order = (
