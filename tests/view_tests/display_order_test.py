@@ -2,20 +2,9 @@ import random
 
 import bottle
 import pytest
-
 from pizza.orders import models
 
-
 bottle.DEBUG = True
-
-
-@pytest.fixture(autouse=True)
-def set_engine():
-    models.init("sqlite:///")
-    models.Base.metadata.create_all(bind=models.engine)
-    models.Session.configure(bind=models.engine)
-    yield
-    models.engine.dispose()
 
 
 @pytest.fixture
