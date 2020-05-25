@@ -1,0 +1,6 @@
+[run]
+include = pizza/*
+
+[report]
+include = pizza/*
+show_missing = True
