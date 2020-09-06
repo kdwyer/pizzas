@@ -40,21 +40,23 @@
             button[type=submit] {
                 float: right;
             }
+
+            .form-errors {
+                color: red;
+                font-weight: bold
+            }
         </style>
     </head>
     <body>
         <form method="POST" action="{{ app.get_url('index') }}">
-            {% for field in form %}
-                {% if field.name != 'submit' %}
-                    <div>
-                        {{ field.label }}
-                        <span class="item-price">{{ '{:.2f}'.format(pizzas[field.name].price / 100) }}</span>
-                        {{ field }}
-                    </div>
+            {% for subform in form.forms %}
+                {% if subform.form_errors %}
+                  <p class="form-errors">{{ subform.form_errors | join('<br>') }}</p>
                 {% endif %}
+              {{ subform.label }} {{ subform }}
             {% endfor %}
             <div>
-                {{ form['submit'] }}
+                <button type="submit" name="submit">Place Order</button>
             </div>
         </form>
     </body>

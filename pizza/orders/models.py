@@ -4,6 +4,7 @@ import functools
 import random
 import string
 import sys
+from typing import List
 
 import bottle
 import sqlalchemy as sa
@@ -51,27 +52,21 @@ class Pizza(Base):  # type: ignore
     name = sa.Column(sa.String(64), unique=True)
     price = sa.Column(sa.Integer)
 
-
-class Order(Base):  # type: ignore
-    """An order (header)."""
-
-    __tablename__ = "orders"
-
-    orders_id = sa.Column(sa.Integer, primary_key=True)
-    reference = sa.Column(sa.String(6), unique=True)
-
-    items = orm.relationship("Item")
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.reference = "".join(
-            [random.choice(string.ascii_letters) for _ in range(6)]
-        )
-        return
+    def __repr__(self):
+        return f"Pizza(name='{self.name}')"
 
 
-# One order has many items
-# One item is one pizza
+class Topping(Base):  # type: ignore
+    """Database representation of pizza toppings."""
+
+    __tablename__ = "toppings"
+
+    toppings_id = sa.Column(sa.Integer, primary_key=True)
+    name = sa.Column(sa.String(64), unique=True)
+    price = sa.Column(sa.Integer)
+
+    def __repr__(self) -> str:
+        return f"Topping(name='{self.name}')"
 
 
 class Item(Base):  # type: ignore
@@ -82,8 +77,64 @@ class Item(Base):  # type: ignore
     items_id = sa.Column(sa.Integer, primary_key=True)
     orders_id = sa.Column(sa.Integer, sa.ForeignKey("orders.orders_id"))
     pizzas_id = sa.Column(sa.Integer, sa.ForeignKey("pizzas.pizzas_id"))
+    toppings_id = sa.Column(sa.Integer, sa.ForeignKey("toppings.toppings_id"))
 
     pizza = orm.relationship("Pizza", backref=orm.backref("pizzas", uselist=False))
+    topping = orm.relationship("Topping", backref=orm.backref("toppings"))
+
+    @property
+    def name(self) -> str:
+        """Compute the name of this item."""
+        return self.topping.name if self.topping else self.pizza.name
+
+    @property
+    def price(self) -> int:
+        """Compute the price of this item."""
+        return self.topping.price if self.topping else self.pizza.price
+
+    def __repr__(self) -> str:
+        pn = self.pizza.name if self.pizza else ""
+        tn = self.topping.name if self.topping else ""
+        return f"Item(pizza='{pn}', topping='{tn}')"
+
+
+class Order(Base):  # type: ignore
+    """An order (header)."""
+
+    __tablename__ = "orders"
+
+    orders_id = sa.Column(sa.Integer, primary_key=True)
+    reference = sa.Column(sa.String(6), unique=True)
+
+    items = orm.relationship("Item", uselist=True)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.reference = "".join(
+            [random.choice(string.ascii_letters) for _ in range(6)]
+        )
+        return
+
+    def by_item(self) -> List[Item]:
+        """Fetch ordered by pizza name then item name."""
+        # FIXME: orders with more than one pizza of a type.
+        session = Session.object_session(self)  # type: ignore
+        # The outer join on Topping ensures that we get all the items.
+        # If we use a normal join we don't get the Pizza items, because
+        # those items' toppins_id is NULL.
+        items = (
+            session.query(Item)
+            .join(Pizza)
+            .outerjoin(Topping)
+            .filter(Item.orders_id == self.orders_id)
+            .order_by(Pizza.name, sa.func.coalesce(Topping.name, ""))
+        )
+        return items
+
+    @property
+    def total(self) -> int:
+        """Compute the total price of the order."""
+        return sum(i.price for i in self.items)
 
 
 def manage_session(func):
@@ -96,6 +147,8 @@ def manage_session(func):
     This decorator needs to be placed *after* the route decorator
     (I think because the request ends at route exit, and then the session
     gets removed).
+
+    TODO: consider bottle-sqlalchemy plugin.
     """
 
     @functools.wraps(func)
@@ -118,7 +171,7 @@ def manage_session(func):
     return wrapper
 
 
-def remove_session():
+def remove_session() -> None:
     """Remove a scoped session."""
     # TODO do we need this indirection?
-    Session.remove()
+    Session.remove()  # type: ignore

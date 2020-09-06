@@ -37,6 +37,47 @@ class TestOrder:
         order = models.Order()
         assert re.fullmatch(r"[A-Za-z]{6}", order.reference)
 
+    def test_computes_order(self):
+        pizza1 = models.Pizza(name="foo", price=1000)
+        pizza2 = models.Pizza(name="quux", price=800)
+        topping1 = models.Topping(name="bar", price=100)
+        topping2 = models.Topping(name="baz", price=150)
+        order = models.Order()
+        order.items.append(models.Item(pizza=pizza1))
+        order.items.append(models.Item(pizza=pizza1, topping=topping1))
+        order.items.append(models.Item(pizza=pizza1, topping=topping2))
+        order.items.append(models.Item(pizza=pizza2))
+
+        assert order.total == 2050
+
+
+@pytest.mark.usefixtures("clean_db")
+class TestItem:
+    def test_computes_price_of_pizza(self):
+        pizza = models.Pizza(name="foo", price=600)
+        item = models.Item(pizza=pizza)
+
+        assert item.price == 600
+
+    def test_computes_price_of_topping(self):
+        pizza = models.Pizza(name="foo", price=600)
+        topping = models.Topping(name="bar", price=150)
+        item = models.Item(pizza=pizza, topping=topping)
+
+        assert item.price == 150
+
+    def test_computes_name_of_pizza(self):
+        pizza = models.Pizza(name="foo", price=600)
+        item = models.Item(pizza=pizza)
+
+        assert item.name == "foo"
+
+    def test_computes_name_of_topping(self):
+        topping = models.Topping(name="foo", price=150)
+        item = models.Item(topping=topping)
+
+        assert item.name == "foo"
+
 
 def f():
     session = models.Session()

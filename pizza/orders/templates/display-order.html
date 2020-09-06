@@ -4,13 +4,18 @@
         <title>{{ title }}</title>
     </head>
     <body>
-        <p id="confirmation-title">your order</p>
-        <p>reference <span id="order-reference">{{ reference }}</span></p>
-        <ul>
-            {% for item in order_items %}
-                <li><span class="line-item-name">{{ item.pizza.name}}</span><span class="line-item-price">{{ '{:.2f}'.format(item.pizza.price / 100) }}</span>
-            {% endfor %}
-        </ul>
-        <p id="total">Total:&nbsp;<span>{{ '{:.2f}'.format(total / 100) }}</span></p>
+        <div>
+            <p id="confirmation-title">your order</p>
+            <p>reference <span id="order-reference">{{ order.reference }}</span></p>
+            <ul>
+                {% for item in order.by_item() %}
+                    <li><span class="line-item-name">{{ item.name}}</span><span class="line-item-price">{{ '{:.2f}'.format(item.price / 100) }}</span>
+                {% endfor %}
+            </ul>
+            <p id="total">Total:&nbsp;<span>{{ '{:.2f}'.format(order.total / 100) }}</span></p>
+        </div>
+        <div>
+            <p><a href="{{ app.get_url('index') }}">Order more pizza!</a>
+        </div>
     </body>
 </html>

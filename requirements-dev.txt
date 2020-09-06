@@ -2,3 +2,6 @@ pytest
 webtest
 pytest-cov
 pre-commit
+flake8
+pydocstyle
+isort[pyproject]
