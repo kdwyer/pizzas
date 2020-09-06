@@ -31,7 +31,7 @@ def init(url):
     # FIXME global yuckiness
     global engine
     global Session
-    engine = sa.create_engine(url)
+    engine = sa.create_engine(url, echo=True)
     Session = orm.scoped_session(orm.sessionmaker(bind=engine))
     return
 
