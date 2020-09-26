@@ -85,7 +85,12 @@ class Item(Base):  # type: ignore
 
 
 def manage_session(func):
-    """Decorator that manages a scoped session's lifecycle."""
+    """
+    Decorator that manages a scoped session's lifecycle.
+
+    Using a decorator permits accessing model instance attributes inside
+    templates without having to set `expire=False` on the session.
+    """
 
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
