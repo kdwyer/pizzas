@@ -9,8 +9,8 @@ app = bottle.Bottle()
 
 
 # FIXME deprecation warning about absolute template paths.
-@models.manage_session
 @app.route("/", name="index", method=["GET", "POST"])
+@models.manage_session
 @bottle.jinja2_view("index", template_lookup=["pizza/orders/templates"])
 def index():
     class Form(wtforms.Form):
@@ -46,8 +46,8 @@ def index():
     }
 
 
-@models.manage_session
 @app.route("/display-order/<order_reference:re:[A-Za-z]{6}>/")
+@models.manage_session
 @bottle.jinja2_view("display-order", template_lookup=["pizza/orders/templates"])
 def display_order(*, order_reference: str) -> typing.Dict[str, typing.Any]:
     session = models.Session()  # type: ignore[misc]
