@@ -90,6 +90,9 @@ def manage_session(func):
 
     Using a decorator permits accessing model instance attributes inside
     templates without having to set `expire=False` on the session.
+
+    This decorator needs to be placed *after* the route decorator but
+    *before* the template decorator.
     """
 
     @functools.wraps(func)
