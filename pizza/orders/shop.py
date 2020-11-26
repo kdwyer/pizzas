@@ -6,6 +6,7 @@ import wtforms
 from . import models
 
 app = bottle.Bottle()
+app.add_hook("after_request", models.remove_session)
 
 
 # FIXME deprecation warning about absolute template paths.

@@ -32,7 +32,9 @@ def init(url):
     global engine
     global Session
     engine = sa.create_engine(url, echo=True)
-    Session = orm.scoped_session(orm.sessionmaker(bind=engine))
+    Session = orm.scoped_session(
+        orm.sessionmaker(bind=engine), scopefunc=lambda: bottle.request
+    )
     return
 
 
@@ -91,8 +93,9 @@ def manage_session(func):
     Using a decorator permits accessing model instance attributes inside
     templates without having to set `expire=False` on the session.
 
-    This decorator needs to be placed *after* the route decorator but
-    *before* the template decorator.
+    This decorator needs to be placed *after* the route decorator
+    (I think because the request ends at route exit, and then the session
+    gets removed).
     """
 
     @functools.wraps(func)
@@ -111,7 +114,11 @@ def manage_session(func):
                 raise
             session.rollback()
             raise
-        finally:
-            Session.remove()
 
     return wrapper
+
+
+def remove_session():
+    """Remove a scoped session."""
+    # TODO do we need this indirection?
+    Session.remove()

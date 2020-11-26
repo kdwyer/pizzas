@@ -60,13 +60,6 @@ class TestSessionManager:
         count_pizzas = session.query(models.Pizza).filter_by(name="not-a-pizza").count()
         assert npizzas == count_pizzas
 
-    def test_removes_session_from_registry(self):
-        sid1 = id(models.Session())
-        models.manage_session(f)()
-        sid2 = id(models.Session())
-        # If the original session has been removed, we should get a different id.
-        assert sid1 != sid2
-
     def test_rolls_back_changes_on_error(self):
         npizzas = 0
         with contextlib.suppress(RuntimeError):
