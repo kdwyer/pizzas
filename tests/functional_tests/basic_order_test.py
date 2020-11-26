@@ -5,13 +5,10 @@ from pizza.orders import models
 
 
 @pytest.fixture
-def add_pizzas():
-    session = models.Session()
-    for name, price in [("funghi", 849), ("margherita", 799)]:
-        pizza = models.Pizza(name=name, price=price)
-        session.add(pizza)
-    session.commit()
-    models.Session.remove()
+def add_pizzas(db_engine, clean_db):
+    with db_engine.connect() as conn:
+        data = [{"name": "funghi", "price": 849}, {"name": "margherita", "price": 799}]
+        conn.execute(models.Pizza.__table__.insert(), data)
 
 
 def test_can_place_order(app, add_pizzas):

@@ -3,13 +3,10 @@ from pizza.orders import models
 
 
 @pytest.fixture
-def add_pizzas():
-    session = models.Session()
+def add_pizzas(clean_db, db_session):
     for name, price in [("funghi", 849), ("margherita", 799)]:
         pizza = models.Pizza(name=name, price=price)
-        session.add(pizza)
-    session.commit()
-    models.Session.remove()
+        db_session.add(pizza)
 
 
 def test_title(app):

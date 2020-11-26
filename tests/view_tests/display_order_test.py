@@ -7,18 +7,15 @@ from pizza.orders import models
 bottle.DEBUG = True
 
 
-@pytest.fixture
-def add_pizzas():
-    session = models.Session()
+@pytest.fixture(scope="function")
+def add_pizzas(clean_db, db_session):
     pizza_data = [("funghi", 849), ("margherita", 799)]
     pizzas = [models.Pizza(name=name, price=price) for (name, price) in pizza_data]
-    session.add_all(pizzas)
+    db_session.add_all(pizzas)
     random.seed(42)
     order = models.Order()
     order.items = [models.Item(pizza=p) for p in pizzas]
-    session.add(order)
-    session.commit()
-    models.Session.remove()
+    db_session.add(order)
 
 
 def test_contains_expected_html(app, add_pizzas):

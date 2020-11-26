@@ -15,3 +15,5 @@ geographic order range
 geographic delivery charge
 membership
 reporting
+clean up test fixtures
+decouple test sessions from models.Session
