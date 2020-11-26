@@ -46,7 +46,7 @@ class Pizza(Base):  # type: ignore
     __tablename__ = "pizzas"
 
     pizzas_id = sa.Column(sa.Integer, primary_key=True)
-    name = sa.Column(sa.String(64))
+    name = sa.Column(sa.String(64), unique=True)
     price = sa.Column(sa.Integer)
 
 

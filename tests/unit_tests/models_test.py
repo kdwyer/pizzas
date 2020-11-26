@@ -3,7 +3,7 @@ import re
 
 import pytest
 from pizza.orders import models
-from sqlalchemy import orm
+from sqlalchemy import exc, orm
 
 
 @pytest.fixture
@@ -76,3 +76,12 @@ class TestSessionManager:
             session.query(models.Pizza).filter_by(name="also-not-a-pizza").count()
         )
         assert npizzas == count_pizzas
+
+
+@pytest.mark.usefixtures("clean_db")
+class TestPizza:
+    def test_names_are_unique(self, db_session):
+        ps = [models.Pizza(name="A") for _ in range(2)]
+        db_session.add_all(ps)
+        with pytest.raises(exc.IntegrityError):
+            db_session.commit()
