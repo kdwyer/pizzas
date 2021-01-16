@@ -96,6 +96,7 @@ class PizzaForm(FormLevelErrorForm):
         items = [item]
         toppings_items = [models.Item(pizza=pizza, topping=t) for t in toppings]
         items.extend(toppings_items)
+        session.add_all(items)
         return items
 
     def validate(self) -> bool:
