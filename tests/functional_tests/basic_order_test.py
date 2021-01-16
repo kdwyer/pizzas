@@ -8,7 +8,8 @@ from pizza.orders import models
 def add_pizzas(db_engine, clean_db):
     data = [{"name": "funghi", "price": 849}, {"name": "margherita", "price": 799}]
     with db_engine.connect() as conn:
-        conn.execute(models.Pizza.__table__.insert(), data)
+        with conn.begin():
+            conn.execute(models.Pizza.__table__.insert(), data)
 
 
 @pytest.fixture
@@ -20,7 +21,8 @@ def add_toppings(db_engine, clean_db):
         {"name": "mushrooms", "price": 50},
     ]
     with db_engine.connect() as conn:
-        conn.execute(models.Topping.__table__.insert(), data)
+        with conn.begin():
+            conn.execute(models.Topping.__table__.insert(), data)
 
 
 def test_can_place_order(app, add_pizzas, add_toppings):
