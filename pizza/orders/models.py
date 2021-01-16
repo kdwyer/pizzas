@@ -9,7 +9,6 @@ from typing import List
 import bottle
 import sqlalchemy as sa
 from sqlalchemy import orm
-from sqlalchemy.ext.declarative import declarative_base
 
 # TODO do we need to expose engine?
 engine = None  # type: ignore
@@ -40,7 +39,7 @@ def init(url):
 
 
 # TODO - make base class with useful attributes.
-Base = declarative_base(metadata=metadata)
+Base = orm.declarative_base(metadata=metadata)
 
 
 class Pizza(Base):  # type: ignore
