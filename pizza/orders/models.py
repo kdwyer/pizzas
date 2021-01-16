@@ -33,7 +33,7 @@ def init(url):
     global Session
     engine = sa.create_engine(url, echo=True)
     Session = orm.scoped_session(
-        orm.sessionmaker(bind=engine), scopefunc=lambda: bottle.request
+        orm.sessionmaker(bind=engine, future=True), scopefunc=lambda: bottle.request
     )
     return
 
