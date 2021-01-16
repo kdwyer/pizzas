@@ -78,7 +78,7 @@ class Item(Base):  # type: ignore
     pizzas_id = sa.Column(sa.Integer, sa.ForeignKey("pizzas.pizzas_id"))
     toppings_id = sa.Column(sa.Integer, sa.ForeignKey("toppings.toppings_id"))
 
-    pizza = orm.relationship("Pizza", backref=orm.backref("pizzas", uselist=False))
+    pizza = orm.relationship("Pizza", backref=orm.backref("pizzas"))
     topping = orm.relationship("Topping", backref=orm.backref("toppings"))
 
     @property
@@ -105,7 +105,7 @@ class Order(Base):  # type: ignore
     orders_id = sa.Column(sa.Integer, primary_key=True)
     reference = sa.Column(sa.String(6), unique=True)
 
-    items = orm.relationship("Item", uselist=True)
+    items = orm.relationship("Item")
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
