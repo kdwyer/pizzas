@@ -2,8 +2,9 @@ import contextlib
 import re
 
 import pytest
+import sqlalchemy as sa
 from pizza.orders import models
-from sqlalchemy import exc, orm
+from sqlalchemy import exc, func, orm
 
 
 @pytest.fixture
@@ -98,7 +99,14 @@ class TestSessionManager:
         npizzas = 1
         models.manage_session(f)()
         session = models.Session()
-        count_pizzas = session.query(models.Pizza).filter_by(name="not-a-pizza").count()
+        pizza_query = (
+            sa.select(models.Pizza).where(models.Pizza.name == "not-a-pizza").subquery()
+        )
+        count_pizzas = (
+            session.execute(sa.select(func.count()).select_from(pizza_query))
+            .scalars()
+            .one()
+        )
         assert npizzas == count_pizzas
 
     def test_rolls_back_changes_on_error(self):
@@ -106,8 +114,15 @@ class TestSessionManager:
         with contextlib.suppress(RuntimeError):
             models.manage_session(g)()
         session = models.Session()
+        pizza_query = (
+            sa.select(models.Pizza)
+            .where(models.Pizza.name == "also-not-a-pizza")
+            .subquery()
+        )
         count_pizzas = (
-            session.query(models.Pizza).filter_by(name="also-not-a-pizza").count()
+            session.execute(sa.select(func.count()).select_from(pizza_query))
+            .scalars()
+            .one()
         )
         assert npizzas == count_pizzas
 
