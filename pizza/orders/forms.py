@@ -1,5 +1,6 @@
 from typing import Dict, List
 
+import sqlalchemy as sa
 import wtforms
 from wtforms import widgets
 
@@ -46,7 +47,8 @@ class FormLevelErrorForm(wtforms.Form):
 
 def get_toppings() -> List[models.Topping]:
     session = models.Session()  # type: ignore
-    return session.query(models.Topping.name).order_by(models.Topping.name).all()
+    query = sa.select(models.Topping.name).order_by(models.Topping.name)
+    return session.execute(query).all()
 
 
 class MultiCheckboxField(wtforms.SelectMultipleField):
@@ -67,12 +69,12 @@ class ToppingForm(wtforms.Form):
     def create_obj(self, session) -> List[models.Topping]:
         """Creates a list of toppings instances based on form data."""
         names = self.data["toppings"]
-        return (
-            session.query(models.Topping)
-            .filter(models.Topping.name.in_(names))
+        query = (
+            sa.select(models.Topping)
+            .where(models.Topping.name.in_(names))
             .order_by(models.Topping.name)
-            .all()
         )
+        return session.execute(query).scalars().all()
 
 
 class PizzaForm(FormLevelErrorForm):
@@ -86,11 +88,8 @@ class PizzaForm(FormLevelErrorForm):
         # Should we validate first?
         if not self.data["selected"]:
             return []
-        pizza = (
-            session.query(models.Pizza)
-            .filter(models.Pizza.name == self.data["name"])
-            .one()
-        )
+        query = sa.select(models.Pizza).where(models.Pizza.name == self.data["name"])
+        pizza = session.execute(query).scalars().one()
         toppings = self.toppings.create_obj(session)
         item = models.Item(pizza=pizza)
         items = [item]
