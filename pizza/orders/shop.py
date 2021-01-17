@@ -1,6 +1,7 @@
 import typing
 
 import bottle
+import sqlalchemy as sa
 
 from . import forms, models
 
@@ -19,7 +20,7 @@ def index():
         order = form.create_obj(session)
         session.flush()
         bottle.redirect(f"/display-order/{order.reference}/")
-    q = session.query(models.Pizza.name).order_by(models.Pizza.name)
+    q = session.execute(sa.select(models.Pizza.name).order_by(models.Pizza.name))
     names = [{"name": name} for (name,) in q]
     data = {"forms": names}
     if bottle.request.method == "POST":
@@ -39,8 +40,10 @@ def index():
 def display_order(*, order_reference: str) -> typing.Dict[str, typing.Any]:
     session = models.Session()  # type: ignore[misc]
     order = (
-        session.query(models.Order)
-        .filter(models.Order.reference == order_reference)
+        session.execute(
+            sa.select(models.Order).where(models.Order.reference == order_reference)
+        )
+        .scalars()
         .one()
     )
     return {
