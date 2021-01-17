@@ -121,14 +121,14 @@ class Order(Base):  # type: ignore
         # The outer join on Topping ensures that we get all the items.
         # If we use a normal join we don't get the Pizza items, because
         # those items' toppins_id is NULL.
-        items = (
-            session.query(Item)
+        query = (
+            sa.select(Item)
             .join(Pizza)
             .outerjoin(Topping)
-            .filter(Item.orders_id == self.orders_id)
+            .where(Item.orders_id == self.orders_id)
             .order_by(Pizza.name, sa.func.coalesce(Topping.name, ""))
         )
-        return items
+        return session.execute(query).scalars()
 
     @property
     def total(self) -> int:
