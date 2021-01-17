@@ -1,6 +1,7 @@
 """Tests for forms."""
 
 import pytest
+import sqlalchemy as sa
 import wtforms
 from pizza.orders import forms, models
 from webob.multidict import MultiDict
@@ -58,7 +59,13 @@ class TestOrderForm:
             [("forms-0-name", "margherita"), ("forms-0-selected", True)]
         )
         form = forms.OrderForm(formdata=formdata)
-        margherita = db_session.query(models.Pizza).filter_by(name="margherita").one()
+        margherita = (
+            db_session.execute(
+                sa.select(models.Pizza).where(models.Pizza.name == "margherita")
+            )
+            .scalars()
+            .one()
+        )
 
         form.validate()
         order = form.create_obj(db_session)
@@ -76,8 +83,20 @@ class TestOrderForm:
             ]
         )
         form = forms.OrderForm(formdata=formdata)
-        margherita = db_session.query(models.Pizza).filter_by(name="margherita").one()
-        mushrooms = db_session.query(models.Topping).filter_by(name="mushrooms").one()
+        margherita = (
+            db_session.execute(
+                sa.select(models.Pizza).where(models.Pizza.name == "margherita")
+            )
+            .scalars()
+            .one()
+        )
+        mushrooms = (
+            db_session.execute(
+                sa.select(models.Topping).where(models.Topping.name == "mushrooms")
+            )
+            .scalars()
+            .one()
+        )
 
         form.validate()
         order = form.create_obj(db_session)
@@ -101,10 +120,28 @@ class TestOrderForm:
             ]
         )
         form = forms.OrderForm(formdata=formdata)
-        margherita = db_session.query(models.Pizza).filter_by(name="margherita").one()
-        funghi = db_session.query(models.Pizza).filter_by(name="funghi").one()
-        mushrooms = db_session.query(models.Topping).filter_by(name="mushrooms").one()
-        scamorza = db_session.query(models.Topping).filter_by(name="scamorza").one()
+        pizza_select = sa.select(models.Pizza)
+        margherita = (
+            db_session.execute(pizza_select.where(models.Pizza.name == "margherita"))
+            .scalars()
+            .one()
+        )
+        funghi = (
+            db_session.execute(pizza_select.where(models.Pizza.name == "funghi"))
+            .scalars()
+            .one()
+        )
+        topping_select = sa.select(models.Topping)
+        mushrooms = (
+            db_session.execute(topping_select.where(models.Topping.name == "mushrooms"))
+            .scalars()
+            .one()
+        )
+        scamorza = (
+            db_session.execute(topping_select.where(models.Topping.name == "scamorza"))
+            .scalars()
+            .one()
+        )
 
         form.validate()
         order = form.create_obj(db_session)
@@ -129,7 +166,13 @@ class TestPizzaForm:
             [("name", "margherita"), ("selected", True), ("toppings", [])]
         )
         form = forms.PizzaForm(formdata=formdata)
-        margherita = db_session.query(models.Pizza).filter_by(name="margherita").one()
+        margherita = (
+            db_session.execute(
+                sa.select(models.Pizza).where(models.Pizza.name == "margherita")
+            )
+            .scalars()
+            .one()
+        )
 
         form.validate()
         items = form.create_obj(db_session)
@@ -148,7 +191,13 @@ class TestPizzaForm:
             ]
         )
         form = forms.PizzaForm(formdata=formdata)
-        margherita = db_session.query(models.Pizza).filter_by(name="margherita").one()
+        margherita = (
+            db_session.execute(
+                sa.select(models.Pizza).where(models.Pizza.name == "margherita")
+            )
+            .scalars()
+            .one()
+        )
 
         form.validate()
         items = form.create_obj(db_session)
@@ -192,7 +241,13 @@ class TestToppingForm:
     def test_returns_one_topping(self, db_session):
         formdata = MultiDict([("toppings", "mushrooms")])
         form = forms.ToppingForm(formdata=formdata)
-        mushrooms = db_session.query(models.Topping).filter_by(name="mushrooms").one()
+        mushrooms = (
+            db_session.execute(
+                sa.select(models.Topping).where(models.Topping.name == "mushrooms")
+            )
+            .scalars()
+            .one()
+        )
 
         form.validate()
         toppings = form.create_obj(db_session)
@@ -204,7 +259,9 @@ class TestToppingForm:
         formdata = MultiDict([("toppings", "mushrooms"), ("toppings", "scamorza")])
         form = forms.ToppingForm(formdata=formdata)
         stored_toppings = (
-            db_session.query(models.Topping).order_by(models.Topping.name).all()
+            db_session.execute(sa.select(models.Topping).order_by(models.Topping.name))
+            .scalars()
+            .all()
         )
 
         form.validate()
